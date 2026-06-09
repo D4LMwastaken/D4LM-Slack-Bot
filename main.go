@@ -22,8 +22,11 @@ func main() {
 	botToken := os.Getenv("SLACK_BOT_TOKEN")
 	openRouterToken := os.Getenv("HACK_CLUB_API_KEY")
 
-	openRouterClient := openrouter.NewClient(openRouterToken)
+	openRouterConfig := openrouter.DefaultConfig(openRouterToken)
 
+	openRouterConfig.BaseURL = "https://ai.hackclub.com/proxy/v1"
+
+	openRouterClient := openrouter.NewClientWithConfig(*openRouterConfig)
 
 	// Following the example for the API...
 	api := slack.New(botToken, slack.OptionAppLevelToken(appToken))
@@ -42,8 +45,6 @@ func main() {
 			case socketmode.EventTypeSlashCommand:
 				cmd, ok := evt.Data.(slack.SlashCommand)
 				cmdName := cmd.Command
-				cmdInput := cmd.Text
-				println(cmdInput)
 				if !ok {
 					fmt.Println("Ignored ", evt)
 					continue
@@ -57,20 +58,28 @@ func main() {
 					}
 					client.Ack(*evt.Request, payload)
 				case "/d4lm-ask":
-					resp, _ := openRouterClient.CreateChatCompletion(
-						context.Background(),
-						openrouter.ChatCompletionRequest{
-							Model: "~google/gemini-flash-latest",
-							Messages: []openrouter.ChatCompletionMessage{
-								openrouter.UserMessage(cmdInput),
-							},
-						})
+					// There is a 3-second timeout for a reason hopefully
+					client.Ack(*evt.Request, nil)
 
-					payload := &slack.TextBlockObject{
-						Type: slack.MarkdownType,
-						Text: resp.Choices[0].Message.Content.Text,
-					}
-					client.Ack(*evt.Request, payload)
+					go func(cmd slack.SlashCommand) {
+						resp, err := openRouterClient.CreateChatCompletion(
+							context.Background(),
+							openrouter.ChatCompletionRequest{
+								Model: "~google/gemini-flash-latest", // Use a valid model string
+								Messages: []openrouter.ChatCompletionMessage{
+									openrouter.UserMessage(cmd.Text),
+								},
+							})
+
+						if err != nil {
+							fmt.Println("LLM Error:", err)
+							api.PostEphemeral(cmd.ChannelID, cmd.UserID, slack.MsgOptionText("Sorry, I had trouble thinking: "+err.Error(), false))
+							return
+						}
+
+						msgText := "Response: \n" + resp.Choices[0].Message.Content.Text
+						api.PostMessage(cmd.ChannelID, slack.MsgOptionText(msgText, false))
+					}(cmd)
 				}
 			}
 		}
