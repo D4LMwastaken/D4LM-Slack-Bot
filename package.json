@@ -1,0 +1,24 @@
+{
+  "name": "d4lm-slack-bot",
+  "version": "1.0.0",
+  "description": "My first Slack Bot!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/D4LMwastaken/D4LM-Slack-Bot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/D4LMwastaken/D4LM-Slack-Bot/issues"
+  },
+  "homepage": "https://github.com/D4LMwastaken/D4LM-Slack-Bot#readme",
+  "dependencies": {
+    "@slack/bolt": "^4.7.3",
+    "dotenv": "^17.4.2"
+  }
+}
