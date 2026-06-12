@@ -70,10 +70,29 @@ func main() {
 
 					payload := &slack.TextBlockObject{
 						Type: slack.MarkdownType,
-						Text: "Please note that this command is quickly processed: " + response.Text(),
+						Text: "Please note that this command is quickly processed: \n" + response.Text(),
 					}
 					client.Ack(*evt.Request, payload)
+
+				case "/d4lm-ascii-art":
+					response, err := geminiClient.Models.GenerateContent(
+						context.Background(),
+						"gemini-3.1-flash-lite",
+						genai.Text("very quickly (less than 3 seconds), generate ascii art for this user following the prompt: "+cmd.Text),
+						nil)
+
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					payload := &slack.TextBlockObject{
+						Type: slack.MarkdownType,
+						Text: "Please note that this command is quickly processed, here is your ASCII Art: \n" + response.Text(),
+					}
+
+					client.Ack(*evt.Request, payload)
 				}
+
 			}
 		}
 	}()
