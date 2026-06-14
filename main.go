@@ -138,7 +138,7 @@ func main() {
 							"/d4lm-catfact		Replies with a cat fact!\n" +
 							"/d4lm-joke			Replies with a joke!\n" +
 							"/d4lm-ask			Replies with the answer you seek!\n" +
-							"/d4lm-ascii-art		Gnerates ascii art !",
+							"/d4lm-ascii-art		Gnerates ascii art!",
 					}
 
 					client.Ack(*evt.Request, payload)
