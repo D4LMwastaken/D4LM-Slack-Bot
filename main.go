@@ -80,7 +80,7 @@ func main() {
 					response, err := geminiClient.Models.GenerateContent(
 						context.Background(),
 						model,
-						genai.Text("very quickly (less than 3 seconds), generate ascii art for this user following the prompt: "+cmd.Text),
+						genai.Text("Instantly generate ascii art for this user which is: "+cmd.Text),
 						nil)
 
 					if err != nil {
