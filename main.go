@@ -12,6 +12,8 @@ import (
 	"google.golang.org/genai"
 )
 
+const model = "gemini-3.1-flash-lite"
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -59,7 +61,7 @@ func main() {
 				case "/d4lm-ask":
 					response, err := geminiClient.Models.GenerateContent(
 						context.Background(),
-						"gemini-3.1-flash-lite",
+						model,
 						genai.Text("Very quickly (less than 3 seconds), answer this question: "+cmd.Text),
 						nil,
 					)
@@ -77,7 +79,7 @@ func main() {
 				case "/d4lm-ascii-art":
 					response, err := geminiClient.Models.GenerateContent(
 						context.Background(),
-						"gemini-3.1-flash-lite",
+						model,
 						genai.Text("very quickly (less than 3 seconds), generate ascii art for this user following the prompt: "+cmd.Text),
 						nil)
 
@@ -91,8 +93,56 @@ func main() {
 					}
 
 					client.Ack(*evt.Request, payload)
-				}
 
+				case "/d4lm-catfact":
+					response, err := geminiClient.Models.GenerateContent(
+						context.Background(),
+						model,
+						genai.Text("In less than 3 seconds, send me a catfact!"),
+						nil)
+
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					payload := &slack.TextBlockObject{
+						Type: slack.MarkdownType,
+						Text: "Please note that this command is quickly processed: \n" + response.Text(),
+					}
+
+					client.Ack(*evt.Request, payload)
+
+				case "/d4lm-joke":
+					response, err := geminiClient.Models.GenerateContent(
+						context.Background(),
+						model,
+						genai.Text("In less than 3 seconds, reply with a joke!"),
+						nil)
+
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					payload := &slack.TextBlockObject{
+						Type: slack.MarkdownType,
+						Text: "Please note that this command is quickly processed: \n" + response.Text(),
+					}
+
+					client.Ack(*evt.Request, payload)
+
+				case "/d4lm-help":
+					payload := &slack.TextBlockObject{
+						Type: slack.MarkdownType,
+						Text: "/d4lm-ping			Pings the bot!\n" +
+							"/d4lm-help			Shows you all the commands!\n" +
+							"/d4lm-catfact		Replies with a cat fact!\n" +
+							"/d4lm-joke			Replies with a joke!\n" +
+							"/d4lm-ask			Replies with the answer you seek!\n" +
+							"/d4lm-ascii-art		Gnerates ascii art !",
+					}
+
+					client.Ack(*evt.Request, payload)
+				}
 			}
 		}
 	}()
